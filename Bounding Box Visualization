@@ -1,0 +1,45 @@
+def show_image_with_bbox(image_path, label_path, class_names=["pothole"]):
+    img = cv2.imread(image_path)
+    if img is None:
+        print("Gambar tidak bisa dibaca:", image_path)
+        return
+
+    h, w = img.shape[:2]
+
+    if not os.path.exists(label_path):
+        print("Label tidak ditemukan untuk:", image_path)
+        return
+
+    with open(label_path, "r") as f:
+        lines = f.readlines()
+
+    for line in lines:
+        c, x, y, bw, bh = map(float, line.split())
+
+        cx, cy = int(x * w), int(y * h)
+        bw, bh = int(bw * w), int(bh * h)
+
+        x1, y1 = int(cx - bw/2), int(cy - bh/2)
+        x2, y2 = int(cx + bw/2), int(cy + bh/2)
+
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(img, class_names[int(c)], (x1, y1 - 5),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    plt.figure(figsize=(6,6))
+    plt.imshow(img)
+    plt.title(os.path.basename(image_path))
+    plt.axis("off")
+    plt.show()
+
+# Pilih 1 contoh
+example_img = glob.glob(os.path.join(train_path, "*.jpg"))
+if len(example_img) > 0:
+    example_img = example_img[0]
+    example_label = os.path.join(label_train, os.path.basename(example_img).replace(".jpg", ".txt"))
+
+    print("\nContoh Bounding Box:")
+    show_image_with_bbox(example_img, example_label)
+else:
+    print("Tidak ada gambar di folder train.")
