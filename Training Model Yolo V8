@@ -1,0 +1,23 @@
+model_name = "yolov8n.pt"
+model = YOLO(model_name)
+
+# parameter training
+EPOCHS = 50
+BATCH = 16        
+IMGSZ = 640       
+LR = 0.01         
+
+print("\nMulai training...")
+results = model.train(
+    data=yaml_path,
+    epochs=EPOCHS,
+    batch=BATCH,
+    imgsz=IMGSZ,
+    lr0=LR,
+    name="pothole_yolov8n_experiment",
+    save=True,           # simpan best
+    exist_ok=True,
+    device='cpu'             # ganti ke 'gpu' ada GPU
+)
+
+print("Training selesai. Hasil:", results)
