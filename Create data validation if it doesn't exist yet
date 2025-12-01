@@ -1,0 +1,45 @@
+# Buat struktur YOLO standar di folder kerja sementara (di bawah ROOT_DIR/yolo_ready)
+WORKDIR = os.path.join(ROOT_DIR, "yolo_ready")
+os.makedirs(WORKDIR, exist_ok=True)
+
+# test
+train_dst = os.path.join(WORKDIR, "train")
+ensure_yolo_structure(train_dst, images_src=TRAIN_IMG_DIR, labels_src=TRAIN_LABEL_DIR)
+
+# test
+test_dst = os.path.join(WORKDIR, "test")
+ensure_yolo_structure(test_dst, images_src=TEST_IMG_DIR, labels_src=TEST_LABEL_DIR)
+
+# buat val dari train dengan split
+val_dst = os.path.join(WORKDIR, "val")
+os.makedirs(val_dst, exist_ok=True)
+os.makedirs(os.path.join(val_dst, "images"), exist_ok=True)
+os.makedirs(os.path.join(val_dst, "labels"), exist_ok=True)
+
+# Cek data val sudah ada??
+existing_val_images = glob.glob(os.path.join(val_dst, "images", "*.jpg"))
+if len(existing_val_images) == 0:
+    # split 80:20 (train:val) dari train
+    train_images = glob.glob(os.path.join(train_dst, "images", "*.jpg"))
+    train_images = sorted(train_images)
+    random.seed(42)
+    random.shuffle(train_images)
+
+    val_ratio = 0.2
+    n_val = max(1, int(len(train_images) * val_ratio))
+    val_images = train_images[:n_val]
+    new_train_images = train_images[n_val:]
+
+    for img_path in val_images:
+        img_name = os.path.basename(img_path)
+        lbl_name = img_name.replace(".jpg", ".txt")
+
+        shutil.move(img_path, os.path.join(val_dst, "images", img_name))
+        lbl_src = os.path.join(train_dst, "labels", lbl_name)
+        if os.path.exists(lbl_src):
+            shutil.move(lbl_src, os.path.join(val_dst, "labels", lbl_name))
+
+    # hasil
+    print(f"Split: dipindahkan {len(val_images)} gambar ke val (val ratio={val_ratio})")
+else:
+    print("Val sudah ada, tidak melakukan split.")
