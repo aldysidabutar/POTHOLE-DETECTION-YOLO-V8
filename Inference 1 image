@@ -1,0 +1,13 @@
+sample_test_images = glob.glob(os.path.join(WORKDIR, "test", "images", "*.jpg"))
+if len(sample_test_images) > 0:
+    sample_img = sample_test_images[0]
+    print("\nContoh inference pada:", sample_img)
+    preds = model.predict(source=sample_img, conf=0.25, save=False, imgsz=IMGSZ)
+    # preds adalah list of Results; tampilkan hasil overlay
+    annotated = preds[0].plot()  
+    plt.figure(figsize=(8,8))
+    plt.imshow(annotated)
+    plt.axis("off")
+    plt.show()
+else:
+    print("Tidak ada gambar di test/images untuk di-inferensi.")
